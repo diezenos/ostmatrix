@@ -1,95 +1,154 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Панель Учителя</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель учителя Ascendance</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <div class="container">
-            <h1>Панель Учителя</h1>
-            <nav>
-                <ul>
-                    <li><a href="index.html">Главная</a></li>
-                    <li><a href="top.html">Общий Топ</a></li>
-                    <li><a href="student_panel.html">Личный кабинет</a></li>
-                    <li><a href="teacher_panel.html">Панель Учителя</a></li>
-                     <li><a href="login.html">Войти как ученик</a></li> <li><a href="?page=login&role=teacher">Войти как учитель</a></li>
-                    <li><a href="register.html">Регистрация</a></li>
-                </ul>
-            </nav>
-        </div>
+        <h1><a href="?page=index">Ascendance</a></h1>
+        <nav>
+            <ul>
+                <li><a href="?page=top">Общий Топ</a></li>
+                <li><a href="?page=student_panel">Личный кабинет</a></li>
+                <li><a href="?page=teacher_panel">Панель Учителя</a></li>
+                <li><a href="?page=login">Войти</a></li>
+                <li><a href="?page=register">Регистрация</a></li>
+            </ul>
+        </nav>
     </header>
 
-    <section id="teacher-actions" class="container">
-        <h2>Ввод баллов ученику</h2>
-        <form id="updateRatingsForm">
+    <section id="teacher-panel" class="container">
+        <h2>Панель учителя</h2>
+
+        <div class="teacher-info"> <!- -  Блок для информации об учителе -->
+            <h3>Вы вошли как: <span id="teacherFullName"></span></h3> <!- -  Поле для ФИО учителя -->
+        </div>
+
+        <div class="search-student">
+            <h3>Поиск ученика</h3>
             <div class="form-group">
-                <label for="studentId">ID ученика:</label>
-                <input type="text" id="studentId" name="studentId" required>
+                <label for="studentName">Имя или фамилия ученика:</label>
+                <input type="text" id="studentName" name="studentName" placeholder="Введите имя или фамилию">
             </div>
-            <div class="form-group">
-                <label for="academicRating">Академический рейтинг:</label>
-                <input type="number" id="academicRating" name="academicRating" value="0" required>
-            </div>
-            <div class="form-group">
-                <label for="selfRealRating">Рейтинг самореализации:</label>
-                <input type="number" id="selfRealRating" name="selfRealRating" value="0" required>
-            </div>
-            <div class="form-group">
-                <label for="socialRating">Социальный рейтинг:</label>
-                <input type="number" id="socialRating" name="socialRating" value="0" required>
-            </div>
-            <div class="form-group">
-                <label for="specRating">Рейтинг специальности:</label>
-                <input type="number" id="specRating" name="specRating" value="0" required>
-            </div>
-            <div class="form-group">
-                <label for="uniqueRating">Рейтинг уникальности:</label>
-                <input type="number" id="uniqueRating" name="uniqueRating" value="0" required>
-            </div>
-            <button type="submit" class="button-primary">Обновить рейтинги</button>
-            <div id="updateStatus" style="margin-top: 10px;"></div>
-        </form>
+            <button onclick="findStudentByName()" class="button-primary">Найти ученика</button>
+            <div id="searchResult"></div>
+        </div>
+
+        <div class="update-ratings" style="margin-top: 30px;">
+            <h3>Обновить рейтинги ученика</h3>
+            <form id="updateRatingsForm">
+                <div class="form-group">
+                    <label for="studentId">ID ученика:</label>
+                    <input type="text" id="studentId" name="studentId" required placeholder="Введите ID ученика">
+                </div>
+                <div class="rating-inputs">
+                    <div class="form-group">
+                        <label for="academicRating">Academic Rating:</label>
+                        <input type="number" id="academicRating" name="academicRating" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="selfRealRating">Self-Real Rating:</label>
+                        <input type="number" id="selfRealRating" name="selfRealRating" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="socialRating">Social Rating:</label>
+                        <input type="number" id="socialRating" name="socialRating" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="specRating">Spec Rating:</label>
+                        <input type="number" id="specRating" name="specRating" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="uniqueRating">Unique Rating:</label>
+                        <input type="number" id="uniqueRating" name="uniqueRating" value="0">
+                    </div>
+                </div>
+                <button type="submit" class="button-primary">Обновить рейтинги</button>
+                <div id="updateMessage" class="message" style="display:none; margin-top: 10px;"></div>
+            </form>
+        </div>
     </section>
 
     <footer>
-        <div class="container">
-            <p>&copy; 2025 Ascendance Project</p>
-        </div>
+        <p>© 2025 Ascendance Project</p>
     </footer>
 
     <script>
-        document.getElementById('updateRatingsForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Предотвратить стандартную отправку формы
-            document.getElementById('updateStatus').textContent = 'Идет обновление...'; // Сообщение о процессе
+        // *** Получаем имя учителя из localStorage при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            var teacherFullName = localStorage.getItem('teacherFullName');
+            if (teacherFullName) {
+                document.getElementById('teacherFullName').textContent = teacherFullName;
+            }
+        });
 
-            const form = document.getElementById('updateRatingsForm');
-            const formData = new FormData(form);
-            const ratingsData = {
+
+        function findStudentByName() {
+            var studentName = document.getElementById('studentName').value;
+            if (!studentName) {
+                alert('Пожалуйста, введите имя или фамилию ученика для поиска.');
+                return;
+            }
+            google.script.run
+                .withSuccessHandler(displaySearchResults)
+                .getStudentByName(studentName);
+        }
+
+        function displaySearchResults(students) {
+            var searchResultDiv = document.getElementById('searchResult');
+            searchResultDiv.innerHTML = ''; // Очищаем предыдущие результаты
+            if (students.length === 0) {
+                searchResultDiv.textContent = 'Ученики не найдены.';
+            } else {
+                var ul = document.createElement('ul');
+                students.forEach(function(student) {
+                    var li = document.createElement('li');
+                    li.textContent = student.lastName + ' ' + student.firstName + ' (' + student.nickname + '), ID: ' + student.userId + ', Ранг: ' + student.rank;
+                    li.onclick = function() {
+                        document.getElementById('studentId').value = student.userId; // Заполняем ID ученика в форму
+                    };
+                    ul.appendChild(li);
+                });
+                searchResultDiv.appendChild(ul);
+            }
+        }
+
+
+        document.getElementById('updateRatingsForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            var studentId = formData.get('studentId');
+            var ratings = {
                 academicRating: Number(formData.get('academicRating')),
                 selfRealRating: Number(formData.get('selfRealRating')),
                 socialRating: Number(formData.get('socialRating')),
                 specRating: Number(formData.get('specRating')),
                 uniqueRating: Number(formData.get('uniqueRating'))
             };
-            const studentId = formData.get('studentId');
 
+            // *** Получаем ФИО учителя из localStorage
+            var teacherName = localStorage.getItem('teacherFullName');
 
             google.script.run
-                .updateStudentRatings(studentId, ratingsData)
-                .then(response => {
+                .withSuccessHandler(function(response) {
+                    var messageDiv = document.getElementById('updateMessage');
+                    messageDiv.textContent = response.message;
+                    messageDiv.style.display = 'block';
                     if (response.success) {
-                        document.getElementById('updateStatus').textContent = response.message; // Сообщение об успехе
-                        form.reset(); // Очищаем форму после успешного обновления
-                    } else {
-                        document.getElementById('updateStatus').textContent = 'Ошибка обновления: ' + response.message; // Сообщение об ошибке
+                        alert(response.message); // Выводим сообщение об успехе
+                        document.getElementById('updateRatingsForm').reset(); // Очищаем форму
                     }
                 })
-                .catch(error => {
-                    console.error('Ошибка при обновлении рейтингов:', error);
-                    document.getElementById('updateStatus').textContent = 'Произошла ошибка. Попробуйте позже.'; // Сообщение об ошибке
-                });
+                .withFailureHandler(function(error) {
+                    var messageDiv = document.getElementById('updateMessage');
+                    messageDiv.textContent = "Ошибка обновления рейтингов: " + error.message;
+                    messageDiv.style.display = 'block';
+                    console.error(error);
+                })
+                .updateStudentRatings(studentId, ratings, teacherName); // <---- Передаем teacherName в функцию
         });
     </script>
 </body>

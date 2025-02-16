@@ -1,93 +1,68 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Ascendance - Личный кабинет</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет Ascendance</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <header>
-        <div class="container">
-            <h1>Личный кабинет</h1>
-            <nav>
-                <ul>
-                    <li><a href="index.html">Главная</a></li>
-                    <li><a href="top.html">Общий Топ</a></li>
-                    <li><a href="student_panel.html">Личный кабинет</a></li>
-                    <li><a href="teacher_panel.html">Панель Учителя</a></li>
-                    <li><a href="login.html">Войти как ученик</a></li>
-                    <li><a href="?page=login&role=teacher">Войти как учитель</a></li>
-                    <li><a href="register.html">Регистрация</a></li>
-                </ul>
-            </nav>
-        </div>
+        <h1><a href="?page=index">Ascendance</a></h1>
+        <nav>
+            <ul>
+                <li><a href="?page=top">Общий Топ</a></li>
+                <li><a href="?page=student_panel">Личный кабинет</a></li>
+                <li><a href="?page=teacher_panel">Панель Учителя</a></li>
+                <li><a href="?page=login">Войти</a></li>
+                <li><a href="?page=register">Регистрация</a></li>
+            </ul>
+        </nav>
     </header>
 
-    <section id="student-profile" class="container">
-        <h2>Личный Профиль Ученика</h2>
-        <div class="profile-info">
-            <h3>Информация об ученике</h3>
-            <p>ID ученика: <span id="studentUserId"></span></p>
-            <p>Имя: <span id="studentFirstName"></span></p>
-            <p>Фамилия: <span id="studentLastName"></span></p>
-            <p>Никнейм: <span id="studentNickname"></span></p>
-            <p>Специализация: <span id="studentSpecialization"></span></p>
-        </div>
-
-        <div class="rating-block">
-            <div class="rating-item">
-                <h4>Общий Рейтинг</h4>
-                <p id="studentOverallRating">--</p>
-            </div>
-            <div class="rating-item">
-                <h4>Ранг</h4>
-                <p id="studentRank">--</p>
-            </div>
+    <section id="student-panel" class="container">
+        <h2>Личный кабинет ученика</h2>
+        <div id="studentProfile">
+            <p><strong>ID:</strong> <span id="userId"></span></p>
+            <p><strong>Имя:</strong> <span id="firstName"></span></p>
+            <p><strong>Фамилия:</strong> <span id="lastName"></span></p>
+            <p><strong>Прозвище:</strong> <span id="nickname"></span></p>
+            <p><strong>Специализация:</strong> <span id="specialization"></span></p>
+            <p><strong>Общий рейтинг:</strong> <span id="overallRating"></span></p>
+            <p><strong>Ранг:</strong> <span id="rank"></span></p>
         </div>
     </section>
 
     <footer>
-        <div class="container">
-            <p>&copy; 2025 Ascendance Project</p>
-        </div>
+        <p>© 2025 Ascendance Project</p>
     </footer>
 
     <script>
-        window.onload = function() {
-            loadStudentProfile();
-        };
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+            const login = params.get('login');
 
-        function loadStudentProfile() {
-            // Получаем логин и роль пользователя из localStorage (их нужно сохранить при входе - это будет следующим шагом!)
-            const login = localStorage.getItem('loggedInLogin'); // *** Временное решение - нужно будет доработать аутентификацию ***
-            const role = localStorage.getItem('loggedInRole');   // *** Временное решение - нужно будет доработать аутентификацию ***
-
-            if (!login || !role) {
-                alert('Вы не вошли в систему. Пожалуйста, войдите.');
-                window.location.href = 'login.html'; // Перенаправить на страницу входа, если нет данных о пользователе
-                return;
+            if (login) {
+                google.script.run
+                    .withSuccessHandler(displayStudentProfile)
+                    .getStudentProfile(login);
+            } else {
+                document.getElementById('studentProfile').innerHTML = '<p>Ошибка: Логин не передан.</p>';
             }
+        });
 
-
-            google.script.run
-                .getStudentProfile(login, role)
-                .then(function(studentProfile) {
-                    if (studentProfile) {
-                        document.getElementById('studentUserId').textContent = studentProfile.userId;
-                        document.getElementById('studentFirstName').textContent = studentProfile.firstName;
-                        document.getElementById('studentLastName').textContent = studentProfile.lastName;
-                        document.getElementById('studentNickname').textContent = studentProfile.nickname || '-'; // Если никнейм пустой, отображаем '-'
-                        document.getElementById('studentSpecialization').textContent = studentProfile.specialization || '-'; // Если специализация пустая, отображаем '-'
-                        document.getElementById('studentOverallRating').textContent = studentProfile.overallRating;
-                        document.getElementById('studentRank').textContent = studentProfile.rank;
-                    } else {
-                        alert('Не удалось загрузить данные профиля. Попробуйте позже.');
-                        window.location.href = 'index.html'; // Перенаправить на главную, если не удалось загрузить профиль
-                    }
-                })
-                .catch(function(error) {
-                    console.error('Ошибка при загрузке профиля ученика:', error);
-                    alert('Произошла ошибка при загрузке профиля. Попробуйте еще раз позже.');
-                });
+        function displayStudentProfile(profile) {
+            if (profile) {
+                document.getElementById('userId').textContent = profile.userId;
+                document.getElementById('firstName').textContent = profile.firstName;
+                document.getElementById('lastName').textContent = profile.lastName;
+                document.getElementById('nickname').textContent = profile.nickname;
+                document.getElementById('specialization').textContent = profile.specialization;
+                document.getElementById('overallRating').textContent = profile.overallRating;
+                document.getElementById('rank').textContent = profile.rank;
+            } else {
+                document.getElementById('studentProfile').innerHTML = '<p>Профиль ученика не найден.</p>';
+            }
         }
     </script>
 </body>

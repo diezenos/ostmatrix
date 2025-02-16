@@ -1,13 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Вход в Ascendance</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <header>
+        <h1><a href="?page=index">Ascendance</a></h1>
+        <nav>
+            <ul>
+                <li><a href="?page=top">Общий Топ</a></li>
+                <li><a href="?page=student_panel">Личный кабинет</a></li>
+                <li><a href="?page=teacher_panel">Панель Учителя</a></li>
+                <li><a href="?page=login">Войти</a></li>
+                <li><a href="?page=register">Регистрация</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="container">
         <form id="loginForm">
             <h2>Вход в систему</h2>
+            <div class="form-group">
+                <label for="role">Выберите роль:</label>
+                <select id="role" name="role">
+                    <option value="student">Ученик</option>
+                    <option value="teacher">Учитель</option>
+                </select>
+            </div>
+            <div class="form-group teacher-fields" style="display: none;">
+                <label for="lastName">Фамилия:</label>
+                <input type="text" id="lastName" name="lastName">
+            </div>
+             <div class="form-group teacher-fields" style="display: none;">
+                <label for="firstName">Имя:</label>
+                <input type="text" id="firstName" name="firstName">
+            </div>
+            <div class="form-group teacher-fields" style="display: none;">
+                <label for="middleName">Отчество:</label>
+                <input type="text" id="middleName" name="middleName">
+            </div>
             <div class="form-group">
                 <label for="login">Логин:</label>
                 <input type="text" id="login" name="login" required>
@@ -16,52 +50,66 @@
                 <label for="password">Пароль:</label>
                 <input type="password" id="password" name="password" required>
             </div>
-            <div class="form-group">
-                <label for="role">Роль:</label>
-                <select id="role" name="role">
-                    <option value="student">Ученик</option>
-                    <option value="teacher">Учитель</option>
-                </select>
-            </div>
             <button type="submit" class="button-primary">Войти</button>
-            <p style="margin-top: 10px;">Нет аккаунта? <a href="register.html">Зарегистрируйтесь</a></p>
+             <div id="loginMessage" class="message" style="display:none; margin-top: 10px;"></div>
         </form>
-    </div>
+    </section>
+
+    <footer>
+        <p>© 2025 Ascendance Project</p>
+    </footer>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Предотвратить стандартную отправку формы
+        document.getElementById('role').addEventListener('change', function() {
+            var teacherFields = document.querySelectorAll('.teacher-fields');
+            if (this.value === 'teacher') {
+                teacherFields.forEach(field => field.style.display = 'block');
+            } else {
+                teacherFields.forEach(field => field.style.display = 'none');
+            }
+        });
 
-            const form = document.getElementById('loginForm');
-            const formData = new FormData(form);
-            const data = {};
-            formData.forEach((value, key) => {
-                data[key] = value;
-            });
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var formData = new FormData(this);
+            var role = formData.get('role');
+            var login = formData.get('login');
+            var password = formData.get('password');
+            var firstName = formData.get('firstName'); // Получаем имя учителя
+            var lastName = formData.get('lastName'); // Получаем фамилию учителя
+            var middleName = formData.get('middleName'); // Получаем отчество учителя
+
+            var payload = {
+                role: role,
+                login: login,
+                password: password,
+                firstName: firstName, // Передаем имя учителя
+                lastName: lastName, // Передаем фамилию учителя
+                middleName: middleName // Передаем отчество учителя
+            };
 
             google.script.run
-                .loginUser(data)
-                .then(response => {
+                .withSuccessHandler(function(response) {
+                    var messageDiv = document.getElementById('loginMessage');
+                    messageDiv.textContent = response.message;
+                    messageDiv.style.display = 'block';
                     if (response.success) {
-                        alert(response.message);
-
-                        // *** Добавляем сохранение логина и роли в localStorage (ВРЕМЕННОЕ РЕШЕНИЕ!) ***
-                        localStorage.setItem('loggedInLogin', formData.login);
-                        localStorage.setItem('loggedInRole', response.role);
-
-                        if (response.role === 'student') {
-                            window.location.href = 'student_panel.html'; // Перенаправить ученика в панель ученика
-                        } else if (response.role === 'teacher') {
-                            window.location.href = 'teacher_panel.html'; // Перенаправить учителя в панель учителя
+                        if (response.role === 'teacher') {
+                            // *** Сохраняем ФИО учителя в localStorage при успешном входе учителя
+                            localStorage.setItem('teacherFullName', response.teacherName);
+                            window.location.href = '?page=teacher_panel';
+                        } else {
+                            window.location.href = '?page=student_panel&login=' + login;
                         }
-                    } else {
-                        alert('Ошибка входа: ' + response.message);
                     }
                 })
-                .catch(error => {
-                    console.error('Ошибка при входе:', error);
-                    alert('Произошла ошибка при входе. Попробуйте еще раз позже.');
-                });
+                .withFailureHandler(function(err) {
+                    var messageDiv = document.getElementById('loginMessage');
+                    messageDiv.textContent = "Ошибка входа: " + err.message;
+                    messageDiv.style.display = 'block';
+                    console.error(err);
+                })
+                .loginUser(payload);
         });
     </script>
 </body>

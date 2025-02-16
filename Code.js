@@ -1,4 +1,4 @@
-const SHEET_ID = '1P3V3j1GXjRnDkoxaXMcC4y4mbCXB4TBUD6hqKyvGTl0'; // *** ВАЖНО! *** Вставьте ID вашей Google Таблицы сюда!
+const SHEET_ID = '1XBZVWqZaTDkGDwxh2O1MJa5GDMYtoN38_qSRONH5wCY'; // *** ВАЖНО! *** Вставьте ID вашей Google Таблицы сюда!
 const SHEET_NAME = 'Лист1'; // Или имя вашего листа, если отличается от "Лист1"
 const RANK_THRESHOLDS = { // Пороговые значения для рангов
     D: 29,
@@ -8,12 +8,13 @@ const RANK_THRESHOLDS = { // Пороговые значения для ранг
     S: 120 // и выше
 };
 const TEACHER_LOGIN = 'OSTTeacher'; // *** ВАЖНО! *** Установите логин для учителя
-const TEACHER_PASSWORD = 'secure10Teacher29Pass38Word47OST56'; // *** ВАЖНО! *** Установите пароль для учителя
+const TEACHER_PASSWORD = 'Secure10Teacher29Pass38Word47OST56'; // *** ВАЖНО! *** Установите пароль для учителя
+// *** ВАЖНО! *** Теперь ФИО учителя тоже константа для *логина учителя*
+const TEACHER_FULL_NAME = 'ФИО Учителя по умолчанию'; //  Установите полное ФИО учителя для данного логина
 
 
 function doGet(e) {
     var page = e.parameter.page;
-    var roleParam = e.parameter.role;
 
     if (page == 'student_panel') {
         return HtmlService.createHtmlOutputFromFile('student_panel')
@@ -22,17 +23,13 @@ function doGet(e) {
     } else if (page == 'top') {
         return HtmlService.createHtmlOutputFromFile('top')
             .setSandboxMode(HtmlService.SandboxMode.IFRAME)
-            .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+            .addMetaTag('viewport', 'width=device-width, initial-scale-1');
     }  else if (page == 'teacher_panel') {
         return HtmlService.createHtmlOutputFromFile('teacher_panel')
             .setSandboxMode(HtmlService.SandboxMode.IFRAME)
             .addMetaTag('viewport', 'width=device-width, initial-scale=1');
     } else if (page == 'login') {
-        var template = HtmlService.createHtmlOutputFromFile('login');
-        if (roleParam) {
-            template.getRawContent().replace('', '<script>var initialRole = "' + roleParam + '";</script>');
-        }
-        return template
+        return HtmlService.createHtmlOutputFromFile('login')
             .setSandboxMode(HtmlService.SandboxMode.IFRAME)
             .addMetaTag('viewport', 'width=device-width, initial-scale=1');
     } else if (page == 'register') {
@@ -71,7 +68,7 @@ function registerUser(formData) {
     sheet.appendRow([
         formData.login,
         formData.password,
-        formData.role,
+        'student', // Роль всегда "student" при регистрации
         userId,
         formData.firstName,
         formData.lastName,
@@ -83,7 +80,8 @@ function registerUser(formData) {
         initialRatings.specRating,
         initialRatings.uniqueRating,
         overallRating,
-        rank
+        rank,
+        '' // Пустое поле для "ФИО учителя" при регистрации ученика
     ]);
 
     return { success: true, message: 'Регистрация прошла успешно!' };
@@ -92,12 +90,12 @@ function registerUser(formData) {
 
 function loginUser(formData) {
     if (formData.role === 'teacher') {
-        if (formData.login === TEACHER_LOGIN && formData.password === TEACHER_PASSWORD) {
-            return { success: true, message: 'Вход учителя выполнен!', role: 'teacher' };
+        if (formData.login === TEACHER_LOGIN && formData.password === TEACHER_PASSWORD && formData.firstName === TEACHER_FIRST_NAME && formData.middleName === TEACHER_MIDDLE_NAME && formData.lastName === TEACHER_LAST_NAME) {
+            return { success: true, message: 'Вход учителя выполнен!', role: 'teacher', teacherName: TEACHER_FULL_NAME }; // Возвращаем ФИО учителя!
         } else {
-            return { success: false, message: 'Неверный логин или пароль учителя.' };
+            return { success: false, message: 'Неверные данные учителя.' };
         }
-    } else {
+    } else { // Роль ученика
         var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
         var logins = sheet.getRange('A2:N').getValues();
 
@@ -108,12 +106,40 @@ function loginUser(formData) {
             var overallRating = calculateRatingFormula(logins[i]);
             var rank = calculateRank(overallRating);
 
-            if (userLogin === formData.login && userPassword === formData.password && userRole === formData.role) {
+            if (userLogin === formData.login && userPassword === formData.password && userRole === 'student') { // Проверяем роль явно на "student"
                 return { success: true, message: 'Вход ученика выполнен!', role: userRole, overallRating: overallRating, rank: rank };
             }
         }
-        return { success: false, message: 'Неверный логин, пароль или роль ученика.' };
+        return { success: false, message: 'Неверный логин или пароль ученика.' };
     }
+}
+
+function getStudentByName(studentName) {
+    var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
+    var data = sheet.getDataRange().getValues();
+    var students = [];
+
+    for (var i = 1; i < data.length; i++) { // Начинаем со второй строки, пропуская заголовки
+        var firstName = data[i][4]; // Имя в 5-м столбце (индекс 4)
+        var lastName = data[i][5];  // Фамилия в 6-м столбце (индекс 5)
+        var nickname = data[i][6]; // Прозвище в 7-м столбце (индекс 6)
+        var specialization = data[i][7]; // Специализация в 8-м столбце (индекс 7)
+        var overallRating = calculateRatingFormula(data[i]);
+        var rank = calculateRank(overallRating);
+
+        if (firstName.toLowerCase().includes(studentName.toLowerCase()) || lastName.toLowerCase().includes(studentName.toLowerCase())) {
+            students.push({
+                userId: data[i][3],
+                firstName: firstName,
+                lastName: lastName,
+                nickname: nickname,
+                specialization: specialization,
+                overallRating: overallRating,
+                rank: rank
+            });
+        }
+    }
+    return students;
 }
 
 
@@ -122,7 +148,7 @@ function calculateOverallRating(ratings) {
     for (var rating in ratings) {
         sum += ratings[rating];
     }
-    return Math.round(sum / 5);
+    return Math.round(sum); // Общий рейтинг теперь сумма баллов, без деления на 5
 }
 
 
@@ -148,7 +174,7 @@ function getTopUsers() {
 
     for (var i = 1; i < data.length; i++) {
         var user = {
-            lastName: data[i][4],
+            lastName: data[i][5], // Используем фамилию для топа
             overallRating: calculateRatingFormula(data[i]),
             rank: calculateRank(calculateRatingFormula(data[i]))
         };
@@ -163,15 +189,14 @@ function getTopUsers() {
 }
 
 
-function getStudentProfile(login, role) {
+function getStudentProfile(login) { // Роль больше не передается, определяем по логину
     var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
     var data = sheet.getDataRange().getValues();
 
     for (var i = 1; i < data.length; i++) {
         var userLogin = data[i][0];
-        var userRole = data[i][2];
 
-        if (userLogin === login && userRole === role) {
+        if (userLogin === login) {
             var studentProfile = {
                 userId: data[i][3],
                 firstName: data[i][4],
@@ -202,7 +227,7 @@ function calculateRatingFormula(userData) {
 }
 
 
-function updateStudentRatings(studentId, ratings) {
+function updateStudentRatings(studentId, ratings, teacherName) { // <---- Добавлен параметр teacherName
     var sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(SHEET_NAME);
     var data = sheet.getDataRange().getValues();
     var headerRow = 1;
@@ -216,6 +241,7 @@ function updateStudentRatings(studentId, ratings) {
             sheet.getRange(i + 1, 11).setValue(ratings.socialRating);
             sheet.getRange(i + 1, 12).setValue(ratings.specRating);
             sheet.getRange(i + 1, 13).setValue(ratings.uniqueRating);
+            sheet.getRange(i + 1, 16).setValue(teacherName); // <---- Записываем ФИО учителя в новый столбец!
 
             var userData = sheet.getRange(i + 1, 1, 1, data[0].length).getValues()[0];
             var overallRating = calculateRatingFormula(userData);

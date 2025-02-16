@@ -1,13 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Регистрация в Ascendance</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <header>
+        <h1><a href="?page=index">Ascendance</a></h1>
+        <nav>
+            <ul>
+                <li><a href="?page=top">Общий Топ</a></li>
+                <li><a href="?page=student_panel">Личный кабинет</a></li>
+                <li><a href="?page=teacher_panel">Панель Учителя</a></li>
+                <li><a href="?page=login">Войти</a></li>
+                <li><a href="?page=register">Регистрация</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="container">
         <form id="registerForm">
-            <h2>Регистрация</h2>
+            <h2>Регистрация ученика</h2>
             <div class="form-group">
                 <label for="firstName">Имя:</label>
                 <input type="text" id="firstName" name="firstName" required>
@@ -17,18 +32,12 @@
                 <input type="text" id="lastName" name="lastName" required>
             </div>
             <div class="form-group">
-                <label for="nickname">Никнейм (необязательно):</label>
+                <label for="nickname">Прозвище:</label>
                 <input type="text" id="nickname" name="nickname">
             </div>
             <div class="form-group">
-                <label for="specialization">Специализация:</label>
-                <select id="specialization" name="specialization">
-                    <option value="" disabled selected>Выберите специализацию</option>
-                    <option value="Направление 1">Экономика и Бизнес</option>
-                    <option value="Направление 2">Медицина</option>
-                    <option value="Направление 3">Технические Науки</option>
-                    <option value="Направление 4">Социальные Науки</option>
-                </select>
+                <label for="specialization">Направление:</label>
+                <input type="text" id="specialization" name="specialization">
             </div>
             <div class="form-group">
                 <label for="login">Логин:</label>
@@ -38,43 +47,36 @@
                 <label for="password">Пароль:</label>
                 <input type="password" id="password" name="password" required>
             </div>
-            <div class="form-group">
-                <label for="role">Роль:</label>
-                <select id="role" name="role">
-                    <option value="student">Ученик</option>
-                    <option value="teacher">Учитель</option>
-                </select>
-            </div>
             <button type="submit" class="button-primary">Зарегистрироваться</button>
-            <p style="margin-top: 10px;">Уже есть аккаунт? <a href="login.html">Войти</a></p>
+            <div id="registerMessage" class="message" style="display:none; margin-top: 10px;"></div>
         </form>
-    </div>
+    </section>
+
+    <footer>
+        <p>© 2025 Ascendance Project</p>
+    </footer>
 
     <script>
         document.getElementById('registerForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Предотвратить стандартную отправку формы
-
-            const form = document.getElementById('registerForm');
-            const formData = new FormData(form);
-            const data = {};
-            formData.forEach((value, key) => {
-                data[key] = value;
-            });
-
+            event.preventDefault();
+            var formData = new FormData(this);
             google.script.run
-                .registerUser(data)
-                .then(response => {
+                .withSuccessHandler(function(response) {
+                    var messageDiv = document.getElementById('registerMessage');
+                    messageDiv.textContent = response.message;
+                    messageDiv.style.display = 'block';
                     if (response.success) {
-                        alert(response.message);
-                        window.location.href = 'login.html'; // Перенаправить на страницу входа после успешной регистрации
-                    } else {
-                        alert('Ошибка регистрации: ' + response.message);
+                        alert(response.message + ' Теперь вы можете войти, используя свой логин и пароль.');
+                        window.location.href = '?page=login'; // Перенаправляем на страницу входа
                     }
                 })
-                .catch(error => {
-                    console.error('Ошибка при регистрации:', error);
-                    alert('Произошла ошибка при регистрации. Попробуйте еще раз позже.');
-                });
+                .withFailureHandler(function(error) {
+                    var messageDiv = document.getElementById('registerMessage');
+                    messageDiv.textContent = "Ошибка регистрации: " + error.message;
+                    messageDiv.style.display = 'block';
+                    console.error(error);
+                })
+                .registerUser(Object.fromEntries(formData));
         });
     </script>
 </body>
