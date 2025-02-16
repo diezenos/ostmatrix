@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Панель Учителя</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Панель Учителя</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="top.html">Общий Топ</a></li>
+                    <li><a href="student_panel.html">Личный кабинет</a></li>
+                    <li><a href="teacher_panel.html">Панель Учителя</a></li>
+                     <li><a href="login.html">Войти как ученик</a></li> <li><a href="?page=login&role=teacher">Войти как учитель</a></li>
+                    <li><a href="register.html">Регистрация</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section id="teacher-actions" class="container">
+        <h2>Ввод баллов ученику</h2>
+        <form id="updateRatingsForm">
+            <div class="form-group">
+                <label for="studentId">ID ученика:</label>
+                <input type="text" id="studentId" name="studentId" required>
+            </div>
+            <div class="form-group">
+                <label for="academicRating">Академический рейтинг:</label>
+                <input type="number" id="academicRating" name="academicRating" value="0" required>
+            </div>
+            <div class="form-group">
+                <label for="selfRealRating">Рейтинг самореализации:</label>
+                <input type="number" id="selfRealRating" name="selfRealRating" value="0" required>
+            </div>
+            <div class="form-group">
+                <label for="socialRating">Социальный рейтинг:</label>
+                <input type="number" id="socialRating" name="socialRating" value="0" required>
+            </div>
+            <div class="form-group">
+                <label for="specRating">Рейтинг специальности:</label>
+                <input type="number" id="specRating" name="specRating" value="0" required>
+            </div>
+            <div class="form-group">
+                <label for="uniqueRating">Рейтинг уникальности:</label>
+                <input type="number" id="uniqueRating" name="uniqueRating" value="0" required>
+            </div>
+            <button type="submit" class="button-primary">Обновить рейтинги</button>
+            <div id="updateStatus" style="margin-top: 10px;"></div>
+        </form>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Ascendance Project</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('updateRatingsForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Предотвратить стандартную отправку формы
+            document.getElementById('updateStatus').textContent = 'Идет обновление...'; // Сообщение о процессе
+
+            const form = document.getElementById('updateRatingsForm');
+            const formData = new FormData(form);
+            const ratingsData = {
+                academicRating: Number(formData.get('academicRating')),
+                selfRealRating: Number(formData.get('selfRealRating')),
+                socialRating: Number(formData.get('socialRating')),
+                specRating: Number(formData.get('specRating')),
+                uniqueRating: Number(formData.get('uniqueRating'))
+            };
+            const studentId = formData.get('studentId');
+
+
+            google.script.run
+                .updateStudentRatings(studentId, ratingsData)
+                .then(response => {
+                    if (response.success) {
+                        document.getElementById('updateStatus').textContent = response.message; // Сообщение об успехе
+                        form.reset(); // Очищаем форму после успешного обновления
+                    } else {
+                        document.getElementById('updateStatus').textContent = 'Ошибка обновления: ' + response.message; // Сообщение об ошибке
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при обновлении рейтингов:', error);
+                    document.getElementById('updateStatus').textContent = 'Произошла ошибка. Попробуйте позже.'; // Сообщение об ошибке
+                });
+        });
+    </script>
+</body>
+</html>

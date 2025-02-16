@@ -1,0 +1,225 @@
+<style>
+/* Общие стили */
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+    padding: 20px;
+}
+
+a {
+    color: #e8491d;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #ff6347;
+    text-decoration: underline;
+}
+
+/* Шапка сайта */
+header {
+    background: #333;
+    color: white;
+    padding-top: 20px;
+    min-height: 70px;
+    border-bottom: #e8491d 3px solid;
+}
+
+header h1 {
+    margin: 0;
+    padding-left: 20px;
+    float: left;
+}
+
+header nav {
+    float: right;
+    padding-right: 20px;
+    margin-top: 10px;
+}
+
+header nav ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+header nav li {
+    float: left;
+    display: inline;
+    margin-left: 20px;
+}
+
+header nav li a {
+    color: white;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 16px;
+}
+
+/* Секция "О проекте" на главной странице */
+section#about {
+    padding: 20px;
+    border-bottom: 1px dashed #ddd;
+}
+
+section#about h2 {
+    color: #e8491d;
+    margin-bottom: 20px;
+}
+
+/* Секция "Топ учеников" */
+section#top-users {
+    padding: 20px;
+}
+
+section#top-users h2 {
+    color: #e8491d;
+    margin-bottom: 20px;
+}
+
+ul.top-list {
+    list-style: none;
+    padding: 0;
+}
+
+ul.top-list li {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+ul.top-list li .user-info {
+    float: left;
+}
+
+ul.top-list li .user-info h3 {
+    margin: 0 0 5px 0;
+    color: #333;
+}
+
+ul.top-list li .rating {
+    float: right;
+    font-size: 20px;
+    color: #e8491d;
+    font-weight: bold;
+    padding-top: 10px;
+}
+
+
+/* Секция "Личный кабинет ученика" */
+section#student-profile {
+    padding: 20px;
+}
+
+section#student-profile h2 {
+    color: #e8491d;
+    margin-bottom: 20px;
+}
+
+.profile-info {
+    background: #fff;
+    border: 1px solid #ddd;
+    padding: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.profile-info h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.rating-block {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.rating-item {
+    text-align: center;
+    padding: 15px;
+    background: #eee;
+    border-radius: 5px;
+}
+
+.rating-item h4 {
+    margin-top: 0;
+    color: #555;
+}
+
+.rating-item p {
+    font-size: 24px;
+    font-weight: bold;
+    color: #e8491d;
+    margin: 0;
+}
+
+
+/* Формы */
+form {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 400px;
+    margin: 20px auto;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.button-primary {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #e8491d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.button-primary:hover {
+    background-color: #ff6347;
+}
+
+
+/* Подвал сайта */
+footer {
+    background: #333;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    margin-top: 20px;
+}
+</style>

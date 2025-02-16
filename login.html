@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Вход в Ascendance</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <form id="loginForm">
+            <h2>Вход в систему</h2>
+            <div class="form-group">
+                <label for="login">Логин:</label>
+                <input type="text" id="login" name="login" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="role">Роль:</label>
+                <select id="role" name="role">
+                    <option value="student">Ученик</option>
+                    <option value="teacher">Учитель</option>
+                </select>
+            </div>
+            <button type="submit" class="button-primary">Войти</button>
+            <p style="margin-top: 10px;">Нет аккаунта? <a href="register.html">Зарегистрируйтесь</a></p>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Предотвратить стандартную отправку формы
+
+            const form = document.getElementById('loginForm');
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            google.script.run
+                .loginUser(data)
+                .then(response => {
+                    if (response.success) {
+                        alert(response.message);
+
+                        // *** Добавляем сохранение логина и роли в localStorage (ВРЕМЕННОЕ РЕШЕНИЕ!) ***
+                        localStorage.setItem('loggedInLogin', formData.login);
+                        localStorage.setItem('loggedInRole', response.role);
+
+                        if (response.role === 'student') {
+                            window.location.href = 'student_panel.html'; // Перенаправить ученика в панель ученика
+                        } else if (response.role === 'teacher') {
+                            window.location.href = 'teacher_panel.html'; // Перенаправить учителя в панель учителя
+                        }
+                    } else {
+                        alert('Ошибка входа: ' + response.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при входе:', error);
+                    alert('Произошла ошибка при входе. Попробуйте еще раз позже.');
+                });
+        });
+    </script>
+</body>
+</html>

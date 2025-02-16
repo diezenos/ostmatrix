@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Регистрация в Ascendance</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <form id="registerForm">
+            <h2>Регистрация</h2>
+            <div class="form-group">
+                <label for="firstName">Имя:</label>
+                <input type="text" id="firstName" name="firstName" required>
+            </div>
+            <div class="form-group">
+                <label for="lastName">Фамилия:</label>
+                <input type="text" id="lastName" name="lastName" required>
+            </div>
+            <div class="form-group">
+                <label for="nickname">Никнейм (необязательно):</label>
+                <input type="text" id="nickname" name="nickname">
+            </div>
+            <div class="form-group">
+                <label for="specialization">Специализация:</label>
+                <select id="specialization" name="specialization">
+                    <option value="" disabled selected>Выберите специализацию</option>
+                    <option value="Направление 1">Экономика и Бизнес</option>
+                    <option value="Направление 2">Медицина</option>
+                    <option value="Направление 3">Технические Науки</option>
+                    <option value="Направление 4">Социальные Науки</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="login">Логин:</label>
+                <input type="text" id="login" name="login" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="role">Роль:</label>
+                <select id="role" name="role">
+                    <option value="student">Ученик</option>
+                    <option value="teacher">Учитель</option>
+                </select>
+            </div>
+            <button type="submit" class="button-primary">Зарегистрироваться</button>
+            <p style="margin-top: 10px;">Уже есть аккаунт? <a href="login.html">Войти</a></p>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Предотвратить стандартную отправку формы
+
+            const form = document.getElementById('registerForm');
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            google.script.run
+                .registerUser(data)
+                .then(response => {
+                    if (response.success) {
+                        alert(response.message);
+                        window.location.href = 'login.html'; // Перенаправить на страницу входа после успешной регистрации
+                    } else {
+                        alert('Ошибка регистрации: ' + response.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Ошибка при регистрации:', error);
+                    alert('Произошла ошибка при регистрации. Попробуйте еще раз позже.');
+                });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ascendance - Личный кабинет</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Личный кабинет</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="top.html">Общий Топ</a></li>
+                    <li><a href="student_panel.html">Личный кабинет</a></li>
+                    <li><a href="teacher_panel.html">Панель Учителя</a></li>
+                    <li><a href="login.html">Войти как ученик</a></li>
+                    <li><a href="?page=login&role=teacher">Войти как учитель</a></li>
+                    <li><a href="register.html">Регистрация</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section id="student-profile" class="container">
+        <h2>Личный Профиль Ученика</h2>
+        <div class="profile-info">
+            <h3>Информация об ученике</h3>
+            <p>ID ученика: <span id="studentUserId"></span></p>
+            <p>Имя: <span id="studentFirstName"></span></p>
+            <p>Фамилия: <span id="studentLastName"></span></p>
+            <p>Никнейм: <span id="studentNickname"></span></p>
+            <p>Специализация: <span id="studentSpecialization"></span></p>
+        </div>
+
+        <div class="rating-block">
+            <div class="rating-item">
+                <h4>Общий Рейтинг</h4>
+                <p id="studentOverallRating">--</p>
+            </div>
+            <div class="rating-item">
+                <h4>Ранг</h4>
+                <p id="studentRank">--</p>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Ascendance Project</p>
+        </div>
+    </footer>
+
+    <script>
+        window.onload = function() {
+            loadStudentProfile();
+        };
+
+        function loadStudentProfile() {
+            // Получаем логин и роль пользователя из localStorage (их нужно сохранить при входе - это будет следующим шагом!)
+            const login = localStorage.getItem('loggedInLogin'); // *** Временное решение - нужно будет доработать аутентификацию ***
+            const role = localStorage.getItem('loggedInRole');   // *** Временное решение - нужно будет доработать аутентификацию ***
+
+            if (!login || !role) {
+                alert('Вы не вошли в систему. Пожалуйста, войдите.');
+                window.location.href = 'login.html'; // Перенаправить на страницу входа, если нет данных о пользователе
+                return;
+            }
+
+
+            google.script.run
+                .getStudentProfile(login, role)
+                .then(function(studentProfile) {
+                    if (studentProfile) {
+                        document.getElementById('studentUserId').textContent = studentProfile.userId;
+                        document.getElementById('studentFirstName').textContent = studentProfile.firstName;
+                        document.getElementById('studentLastName').textContent = studentProfile.lastName;
+                        document.getElementById('studentNickname').textContent = studentProfile.nickname || '-'; // Если никнейм пустой, отображаем '-'
+                        document.getElementById('studentSpecialization').textContent = studentProfile.specialization || '-'; // Если специализация пустая, отображаем '-'
+                        document.getElementById('studentOverallRating').textContent = studentProfile.overallRating;
+                        document.getElementById('studentRank').textContent = studentProfile.rank;
+                    } else {
+                        alert('Не удалось загрузить данные профиля. Попробуйте позже.');
+                        window.location.href = 'index.html'; // Перенаправить на главную, если не удалось загрузить профиль
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Ошибка при загрузке профиля ученика:', error);
+                    alert('Произошла ошибка при загрузке профиля. Попробуйте еще раз позже.');
+                });
+        }
+    </script>
+</body>
+</html>

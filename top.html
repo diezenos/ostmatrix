@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ascendance - Общий Топ</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Ascendance - Общий Топ</h1>
+            <nav>
+                <ul>
+                    <li><a href="index.html">Главная</a></li>
+                    <li><a href="top.html">Общий Топ</a></li>
+                    <li><a href="student_panel.html">Личный кабинет</a></li>
+                    <li><a href="teacher_panel.html">Панель Учителя</a></li>
+                    <li><a href="login.html">Войти как ученик</a></li>
+                    <li><a href="?page=login&role=teacher">Войти как учитель</a></li>
+                    <li><a href="register.html">Регистрация</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section id="top-users" class="container">
+        <h2>Общий Рейтинг Учеников</h2>
+        <ul class="top-list" id="topUsersList">
+        </ul>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Ascendance Project</p>
+        </div>
+    </footer>
+
+    <script>
+        window.onload = function() {
+            loadTopUsers();
+        };
+
+        function loadTopUsers() {
+            google.script.run
+                .getTopUsers()
+                .then(function(topUsers) {
+                    var topListElement = document.getElementById('topUsersList');
+                    topListElement.innerHTML = '';
+
+                    if (topUsers && topUsers.length > 0) {
+                        topUsers.forEach(function(user, index) {
+                            var listItem = document.createElement('li');
+                            listItem.innerHTML = `
+                              <div class="user-info">
+                                <h3>${user.lastName}</h3>
+                              </div>
+                              <div class="rating">
+                                Рейтинг: <span>${user.overallRating}</span> (Ранг: <span>${user.rank}</span>)
+                              </div>
+                            `;
+                            topListElement.appendChild(listItem);
+                        });
+                    } else {
+                        topListElement.innerHTML = '<li>Нет данных для отображения топа.</li>';
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Ошибка при загрузке топа учеников:', error);
+                    alert('Не удалось загрузить топ учеников. Попробуйте позже.');
+                });
+        }
+    </script>
+</body>
+</html>
